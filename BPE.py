@@ -118,12 +118,19 @@ def tokenization_examples():
     output_tokenizer(tokenizer, "var/gpt_tokenizer_vocab.txt")
 
 
+def count_adjacent_pairs(indices: list[int]) -> dict[tuple[int, int], int]:
+    
+
 def train_bpe(string: str, num_merges: int) ->BPETokenizerParams:
     indices = list(map(int, string.encode("utf-8")))
     merges: dict[tuple[int, int], int] = {}
     vocab: dict[int, bytes] = {x: bytes([x]) for x in range(256)} # index ->bytes
     # if the arg of bytes([x]) is a list, then it convert [x] to a bytes obeject liks b"abc"
     # but bytes(x) means create a  bytes with x byte"\x00"
+
+    for i in range(num_merges):
+        # count the number of occurences of each pair of tokens 
+        counts = count_adjacent_pairs(indices)
 
 def bpe_tokenizer():
     string = "the cat in the hat"
