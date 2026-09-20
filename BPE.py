@@ -2,6 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from collections import defaultdict
 import tiktoken
+import os
 
 class Tokenizer(ABC):
     """Abstract interface for a tokenizer"""
@@ -82,6 +83,20 @@ def get_compression_ratio(string: str, indices: list[int]) -> float:
 def get_gpt5_tokenizer():
     return tiktoken.get_encoding("o200k_base")
 
+def output_tokenizer(tokenizer, path: str):
+    """Write out the vocabulary of tokenizer to path."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    if not os.path.exists(path):
+        vocab = [
+            b.decode("utf-8", errors="replace")
+            for b in tokenizer.token_byte_values()
+        ]
+
+        with open(path, "w", encoding="utf-8") as f:
+            for token in vocab:
+                f.write(token + "\n")
+
 def tokenization_examples():
     tokenizer = get_gpt5_tokenizer()
     string = "Hello, 🌍! 你好!"
@@ -100,5 +115,22 @@ def tokenization_examples():
         new_indices.append(i)
         print(f"{new_indices} {tokenizer.decode(new_indices)}\n")
 
+    output_tokenizer(tokenizer, "var/gpt_tokenizer_vocab.txt")
+
+
+def train_bpe(string: str, num_merges: int) ->BPETokenizerParams:
+    indices = list(map(int, string.encode("utf-8")))
+    merges: dict[tuple[int, int], int] = {}
+    vocab: dict[int, bytes] = {x: bytes([x]) for x in range(256)} # index ->bytes
+    # if the arg of bytes([x]) is a list, then it convert [x] to a bytes obeject liks b"abc"
+    # but bytes(x) means create a  bytes with x byte"\x00"
+
+def bpe_tokenizer():
+    string = "the cat in the hat"
+    params = 
+
+
 if __name__ == "__main__":
     tokenization_examples()
+
+
