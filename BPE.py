@@ -46,7 +46,7 @@ def merge(indices: list[int], pair: tuple[int, int], new_index: int) -> list[int
         else:
             new_indices.append(indices[i])
             i += 1
-        return new_indices
+    return new_indices
 
 
 @dataclass(frozen = True)
@@ -119,7 +119,11 @@ def tokenization_examples():
 
 
 def count_adjacent_pairs(indices: list[int]) -> dict[tuple[int, int], int]:
-    
+    """Return a dictionary mapping each adjacent pair of tokens in 'indices' to the number of times it occurs"""
+    counts = defaultdict(int)# create a dict with default value
+    for index1, index2 in zip(indices, indices[1:]):
+        counts[(index1, index2)] += 1
+    return counts 
 
 def train_bpe(string: str, num_merges: int) ->BPETokenizerParams:
     indices = list(map(int, string.encode("utf-8")))
@@ -132,12 +136,35 @@ def train_bpe(string: str, num_merges: int) ->BPETokenizerParams:
         # count the number of occurences of each pair of tokens 
         counts = count_adjacent_pairs(indices)
 
+        # find the most commen pair, the first one if many with the same max value
+        pair = max(counts, key=counts.get)
+
+        # Merge that pair
+        new_index = 256 + i
+        merges[pair] = new_index
+        vocab[new_index] = vocab[pair[0]] + vocab[pair[1]]
+        indices = merge(indices, pair, new_index)
+
+    compression_ratio = get_compression_ratio(string, indices)
+
+    return BPETokenizerParams(vocab, merges)
+        
+
+
 def bpe_tokenizer():
     string = "the cat in the hat"
-    params = 
+    params = train_bpe(string, num_merges=4)
+    tokenizer = BPETokenizer(params)
+    string = "the quick brown fat fox"
+    tokens = tokenizer.encode(string)
+    print(tokens)
+    reconstructed_string = tokenizer.decode(tokens)
+    assert string == reconstructed_string
+    print(reconstructed_string)
 
 
 if __name__ == "__main__":
-    tokenization_examples()
+    bpe_tokenizer()
+
 
 
